@@ -1,0 +1,76 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-03-20T00:00:00Z",
+    "creators": [
+      "Person: Eric Flow"
+    ],
+    "licenseListVersion": "3.22"
+  },
+  "name": "basic-python",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://github.com/flowstate/basic-python",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-basic-python",
+      "name": "basic-python",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "git+https://github.com/flowstate/basic-python.git",
+      "filesAnalyzed": true,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) 2024 Eric Flow",
+      "description": "A simple Python text generator using Faker",
+      "primaryPackagePurpose": "APPLICATION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/faker"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Faker",
+      "name": "Faker",
+      "versionInfo": "latest",
+      "downloadLocation": "NOASSERTION",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    }
+  ],
+  "files": [
+    {
+      "SPDXID": "SPDXRef-File-main.py",
+      "fileName": "./main.py",
+      "licenseConcluded": "MIT",
+      "copyrightText": "Copyright (c) 2024 Eric Flow",
+      "fileTypes": [
+        "SOURCE"
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-File-LICENSE",
+      "fileName": "./LICENSE",
+      "licenseConcluded": "MIT",
+      "copyrightText": "Copyright (c) 2024 Eric Flow",
+      "fileTypes": [
+        "TEXT"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-basic-python"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-basic-python",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-Faker"
+    }
+  ]
+}
