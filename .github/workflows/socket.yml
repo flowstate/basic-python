@@ -66,4 +66,6 @@ jobs:
             FILES="$FILES\"$line\","
           done <<< "$CHANGED_FILES"
           FILES=$(echo $FILES | sed 's/,*$//')
-          socketcli --files "[$FILES]" --scm github --repo ${{ github.event.repository.name }} --branch "${{ github.ref_name }}" $(if [ ! -z $DEFAULT_BRANCH ]; then echo "--default_branch"; fi) --pr_number $(if [ -z $PR_NUMBER ]; then echo 0; else echo $PR_NUMBER;fi) --committer "$GITHUB_ACTOR" --commit_message "$COMMIT_MESSAGE" --target_path $GITHUB_WORKSPACE
+          COMMAND="socketcli --files \"[$FILES]\" --scm github --repo ${{ github.event.repository.name }} --branch \"${{ github.ref_name }}\" $(if [ ! -z $DEFAULT_BRANCH ]; then echo \"--default_branch\"; fi) --pr_number $(if [ -z $PR_NUMBER ]; then echo 0; else echo $PR_NUMBER;fi) --committer \"$GITHUB_ACTOR\" --commit_message \"$COMMIT_MESSAGE\" --target_path $GITHUB_WORKSPACE"
+          echo $COMMAND
+          eval $COMMAND
