@@ -31,7 +31,7 @@ jobs:
         run: echo "EVENT_ACTION=${{ github.event.action }}" >> $GITHUB_ENV
       
       - name: Install Socket CLI
-        run: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socketsecurity==2.0.0.dev503
+        run: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socketsecurity==2.0.0.dev504
 
       - name: Check if Default Branch
         if: ${{ always() && format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
