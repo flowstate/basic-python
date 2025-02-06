@@ -61,6 +61,14 @@ jobs:
         run: |
           echo "PR_NUMBER=${{ fromJson(steps.get_pr_data.outputs.result).number || github.event.issue.number || github.event.number }}"  >> $GITHUB_ENV
       
+      - name: Debug Environment
+        run: |
+          if [ -n "$SOCKET_SECURITY_API_KEY" ]; then
+            echo "SOCKET_SECURITY_API_KEY is set"
+          else
+            echo "SOCKET_SECURITY_API_KEY is not set"
+          fi
+
       - name: Run scan
         env:
           SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_API_KEY }}
