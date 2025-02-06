@@ -63,7 +63,7 @@ jobs:
       
       - name: Debug Environment
         env:
-          SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_API_KEY }}
+          SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
         run: |
           if [ -n "$SOCKET_SECURITY_API_KEY" ]; then
             echo "SOCKET_SECURITY_API_KEY is set"
