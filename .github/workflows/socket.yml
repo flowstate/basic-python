@@ -39,8 +39,7 @@ jobs:
       
       - name: Get PR State
         run: |
-          echo "EVENT_ACTION=pull_request" >> $GITHUB_ENV
-          echo "GITHUB_EVENT_NAME=pull_request" >> $GITHUB_ENV
+          echo "EVENT_ACTION=opened" >> $GITHUB_ENV
       
       - name: Install Socket CLI and SDK
         run: |
