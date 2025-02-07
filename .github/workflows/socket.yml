@@ -1,6 +1,25 @@
 name: socket-security-workflow
 run-name: Socket Security Github Action
-on: [push, issue_comment, pull_request]
+on: 
+  push:
+  issue_comment:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      socket_version:
+        description: 'Version of socketsecurity to install'
+        required: false
+        default: '2.0.0.dev502'
+      sdk_version:
+        description: 'Version of socket-sdk-python to install'
+        required: false
+        default: '2.0.4.dev194'
+      use_test_pypi:
+        description: 'Use TestPyPI instead of production PyPI'
+        required: false
+        type: boolean
+        default: true
+
 jobs:
   socket-security:
     permissions:
@@ -30,8 +49,15 @@ jobs:
         if: github.event_name == 'pull_request'
         run: echo "EVENT_ACTION=${{ github.event.action }}" >> $GITHUB_ENV
       
-      - name: Install Socket CLI
-        run: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socketsecurity==2.0.2.dev2
+      - name: Install Socket CLI and SDK
+        run: |
+          if [[ "${{ inputs.use_test_pypi || 'true' }}" == "true" ]]; then
+            pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socketsecurity=="${{ inputs.socket_version || '2.0.0.dev501' }}"
+            pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socket-sdk-python=="${{ inputs.sdk_version || '2.0.4.dev194' }}"
+          else
+            pip install socketsecurity=="${{ inputs.socket_version || '2.0.0.dev501' }}"
+            pip install socket-sdk-python=="${{ inputs.sdk_version || '2.0.4.dev194' }}"
+          fi
 
       - name: Check if Default Branch
         if: ${{ always() && format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
