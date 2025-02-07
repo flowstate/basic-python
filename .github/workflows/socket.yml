@@ -78,4 +78,4 @@ jobs:
           FILES=$(echo $FILES | sed 's/,*$//')
           set -x
           # socketcli --files "[$FILES]" --scm github --repo ${{ github.event.repository.name }} --branch "${{ github.ref_name }}" $(if [ ! -z $DEFAULT_BRANCH ]; then echo "--default_branch"; fi) --pr_number $(if [ -z $PR_NUMBER ]; then echo 0; else echo $PR_NUMBER;fi) --committer "$GITHUB_ACTOR" --commit_message "$COMMIT_MESSAGE" --target_path $GITHUB_WORKSPACE
-          socketcli --files "[$FILES]" --scm github --repo basic-python --branch "eric/fix-things" --pr-number 4 --committers flowstate --commit-message "foo" --target-path $GITHUB_WORKSPACE --ignore-commit-files
+          socketcli --scm github --repo basic-python --branch "eric/fix-things" --pr-number 4 --committers flowstate --commit-message "foo" --target-path $GITHUB_WORKSPACE --ignore-commit-files
