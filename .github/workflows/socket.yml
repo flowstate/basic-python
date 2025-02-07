@@ -38,7 +38,9 @@ jobs:
           python-version: '3.12'
       
       - name: Get PR State
-        run: echo "EVENT_ACTION=pull_request" >> $GITHUB_ENV
+        run: |
+          echo "EVENT_ACTION=pull_request" >> $GITHUB_ENV
+          echo "GITHUB_EVENT_NAME=pull_request" >> $GITHUB_ENV
       
       - name: Install Socket CLI and SDK
         run: |
