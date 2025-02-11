@@ -119,4 +119,4 @@ jobs:
             FILES="$FILES\"$line\","
           done <<< "$CHANGED_FILES"
           FILES=$(echo $FILES | sed 's/,*$//')
-          socketcli --scm github --repo "$REPO_NAME" --pr-number "$(if [ -z "$PR_NUMBER" ]; then echo 0; else echo "$PR_NUMBER"; fi)" --branch "$GITHUB_HEAD_REF" --committer "$GITHUB_ACTOR" --commit_message "$COMMIT_MESSAGE" --target-path "$GITHUB_WORKSPACE" --files "[$FILES]"
+          socketcli --scm github --repo "$REPO_NAME" --pr-number "$(if [ -z "$PR_NUMBER" ]; then echo 0; else echo "$PR_NUMBER"; fi)" --branch "$GITHUB_HEAD_REF" --committer "$GITHUB_ACTOR" --commit-message "$COMMIT_MESSAGE" --target-path "$GITHUB_WORKSPACE" --files "[$FILES]"
