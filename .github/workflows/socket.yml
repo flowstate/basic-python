@@ -18,9 +18,15 @@ jobs:
         id: changed-files
         run: |
             if ${{ github.event_name == 'pull_request' }}; then
-                echo "changed_files=$(git diff --name-only -r HEAD^1 HEAD | xargs)" >> $GITHUB_OUTPUT
+                echo "Running PR diff..."
+                FILES=$(git diff --name-only -r HEAD^1 HEAD)
+                echo "Found files: $FILES"
+                echo "changed_files=$FILES" >> $GITHUB_OUTPUT
             else
-                echo "changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | xargs)" >> $GITHUB_OUTPUT
+                echo "Running push diff..."
+                FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})
+                echo "Found files: $FILES"
+                echo "changed_files=$FILES" >> $GITHUB_OUTPUT
             fi
       - uses: actions/setup-python@v5
         with:
@@ -66,6 +72,7 @@ jobs:
           GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
           CHANGED_FILES=$(echo "${{ steps.changed-files.outputs.changed_files }}" | tr " " "\n")
           FILES=""
@@ -75,5 +82,5 @@ jobs:
           FILES=$(echo $FILES | sed 's/,*$//')
           echo "FILES: $FILES"
           set -x
-          # socketcli --files "[$FILES]" --scm github --repo ${{ github.event.repository.name }} --branch "${{ github.ref_name }}" $(if [ ! -z $DEFAULT_BRANCH ]; then echo "--default_branch"; fi) --pr_number $(if [ -z $PR_NUMBER ]; then echo 0; else echo $PR_NUMBER;fi) --committer "$GITHUB_ACTOR" --commit_message "$COMMIT_MESSAGE" --target_path $GITHUB_WORKSPACE
-          socketcli --scm github --repo basic-python --branch "eric/fix-things" --committers flowstate  --target-path $GITHUB_WORKSPACE --ignore-commit-files
+          # socketcli --files "[$FILES]" --scm github --branch "${{ github.ref_name }}" $(if [ ! -z $DEFAULT_BRANCH ]; then echo "--default_branch"; fi) --committer "$GITHUB_ACTOR" --commit_message "$COMMIT_MESSAGE" --target_path $GITHUB_WORKSPACE
+          socketcli --scm github --repo $REPO_NAME  --pr_number $(if [ -z $PR_NUMBER ]; then echo 0; else echo $PR_NUMBER;fi) --branch $GITHUB_HEAD_REF --committers "$GITHUB_ACTOR"  --target-path $GITHUB_WORKSPACE --ignore-commit-files
