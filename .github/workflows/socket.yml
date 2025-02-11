@@ -82,10 +82,12 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # Get message from PR branch (HEAD^2) and escape special characters
             MSG=$(git log -1 --pretty=%B HEAD^2 | sed 's/["`$\\]/\\&/g')
-            echo "COMMIT_MESSAGE=$MSG" >> $GITHUB_ENV
+            # Wrap the entire message in quotes when setting the env var
+            echo "COMMIT_MESSAGE=\"$MSG\"" >> $GITHUB_ENV
           else
             MSG="${{ github.event.head_commit.message }}"
-            echo "COMMIT_MESSAGE=$MSG" >> $GITHUB_ENV
+            # Wrap the entire message in quotes when setting the env var
+            echo "COMMIT_MESSAGE=\"$MSG\"" >> $GITHUB_ENV
           fi
 
       - name: Debug Git Info
@@ -117,4 +119,4 @@ jobs:
             FILES="$FILES\"$line\","
           done <<< "$CHANGED_FILES"
           FILES=$(echo $FILES | sed 's/,*$//')
-          socketcli --scm github --repo "$REPO_NAME" --pr_number "$(if [ -z "$PR_NUMBER" ]; then echo 0; else echo "$PR_NUMBER"; fi)" --branch "$GITHUB_HEAD_REF" --committer "$GITHUB_ACTOR" --commit_message "$COMMIT_MESSAGE" --target-path "$GITHUB_WORKSPACE" --files "[$FILES]"
+          socketcli --scm github --repo "$REPO_NAME" --pr-number "$(if [ -z "$PR_NUMBER" ]; then echo 0; else echo "$PR_NUMBER"; fi)" --branch "$GITHUB_HEAD_REF" --committer "$GITHUB_ACTOR" --commit_message "$COMMIT_MESSAGE" --target-path "$GITHUB_WORKSPACE" --files "[$FILES]"
