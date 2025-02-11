@@ -17,14 +17,18 @@ jobs:
       - name: Get changed files
         id: changed-files
         run: |
+            echo "HEAD is at: $(git rev-parse HEAD)"
+            echo "HEAD^1 is at: $(git rev-parse HEAD^1)"
+            echo "Full git log:"
+            git log --oneline -n 3
             if ${{ github.event_name == 'pull_request' }}; then
                 echo "Running PR diff..."
-                FILES=$(git diff --name-only -r HEAD^1 HEAD)
+                FILES=$(git diff --name-only -r HEAD^1 HEAD | tr '\n' ' ')
                 echo "Found files: $FILES"
                 echo "changed_files=$FILES" >> $GITHUB_OUTPUT
             else
                 echo "Running push diff..."
-                FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})
+                FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | tr '\n' ' ')
                 echo "Found files: $FILES"
                 echo "changed_files=$FILES" >> $GITHUB_OUTPUT
             fi
