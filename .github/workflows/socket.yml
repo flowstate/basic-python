@@ -39,7 +39,7 @@ jobs:
       
       - name: Get PR State
         run: |
-          echo "EVENT_ACTION=opened" >> $GITHUB_ENV
+          echo "EVENT_ACTION=synchronize" >> $GITHUB_ENV
       
       - name: Install Socket CLI and SDK
         run: |
