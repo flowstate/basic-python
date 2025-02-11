@@ -45,6 +45,9 @@ jobs:
           echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
           echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
           echo "PR_NUMBER: ${{ github.event.pull_request.number }}"
+          echo "REPO NAME: ${{ github.event.repository.name }}"
+          echo "BRANCH NAME: ${{ github.ref_name }}"
+          echo "GITHUB_ACTOR: $GITHUB_ACTOR"
           git rev-parse HEAD
 
       - name: Run scan
