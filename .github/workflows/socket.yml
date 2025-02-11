@@ -1,24 +1,6 @@
 name: socket-security-workflow
 run-name: Socket Security Github Action
-on: 
-  push:
-  issue_comment:
-  pull_request:
-  workflow_dispatch:
-    inputs:
-      socket_version:
-        description: 'Version of socketsecurity to install'
-        required: false
-        default: '2.0.0.dev502'
-      sdk_version:
-        description: 'Version of socket-sdk-python to install'
-        required: false
-        default: '2.0.4.dev194'
-      use_test_pypi:
-        description: 'Use TestPyPI instead of production PyPI'
-        required: false
-        type: boolean
-        default: true
+on: [push, issue_comment, pull_request]
 
 jobs:
   socket-security:
@@ -62,6 +44,7 @@ jobs:
           echo "GITHUB_REF: $GITHUB_REF"
           echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
           echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
+          echo "PR_NUMBER: ${{ github.event.pull_request.number }}"
           git rev-parse HEAD
 
       - name: Run scan
@@ -77,6 +60,7 @@ jobs:
             FILES="$FILES\"$line\","
           done <<< "$CHANGED_FILES"
           FILES=$(echo $FILES | sed 's/,*$//')
+          echo "FILES: $FILES"
           set -x
           # socketcli --files "[$FILES]" --scm github --repo ${{ github.event.repository.name }} --branch "${{ github.ref_name }}" $(if [ ! -z $DEFAULT_BRANCH ]; then echo "--default_branch"; fi) --pr_number $(if [ -z $PR_NUMBER ]; then echo 0; else echo $PR_NUMBER;fi) --committer "$GITHUB_ACTOR" --commit_message "$COMMIT_MESSAGE" --target_path $GITHUB_WORKSPACE
-          socketcli --scm github --repo basic-python --branch "eric/fix-things" --pr-number 4 --committers flowstate  --target-path $GITHUB_WORKSPACE --ignore-commit-files
+          socketcli --scm github --repo basic-python --branch "eric/fix-things" --committers flowstate  --target-path $GITHUB_WORKSPACE --ignore-commit-files
