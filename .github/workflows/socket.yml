@@ -1,24 +1,6 @@
 name: socket-security-workflow
 run-name: Socket Security Github Action
-on: 
-  push:
-  issue_comment:
-  pull_request:
-  workflow_dispatch:
-    inputs:
-      socket_version:
-        description: 'Version of socketsecurity to install'
-        required: false
-        default: '2.0.0.dev502'
-      sdk_version:
-        description: 'Version of socket-sdk-python to install'
-        required: false
-        default: '2.0.4.dev194'
-      use_test_pypi:
-        description: 'Use TestPyPI instead of production PyPI'
-        required: false
-        type: boolean
-        default: true
+on: [push, issue_comment, pull_request]
 
 jobs:
   socket-security:
@@ -32,13 +14,20 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
+      
       - name: Get changed files
         id: changed-files
         run: |
             if ${{ github.event_name == 'pull_request' }}; then
-                echo "changed_files=$(git diff --name-only -r HEAD^1 HEAD | xargs)" >> $GITHUB_OUTPUT
+                echo "Running PR diff..."
+                FILES=$(git diff --name-only -r HEAD^1 HEAD | tr '\n' ' ')
+                echo "Found changed files: $FILES"
+                echo "changed_files=$FILES" >> $GITHUB_OUTPUT
             else
-                echo "changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | xargs)" >> $GITHUB_OUTPUT
+                echo "Running push diff..."
+                FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | tr '\n' ' ')
+                echo "Found changed files: $FILES"
+                echo "changed_files=$FILES" >> $GITHUB_OUTPUT
             fi
       
       - uses: actions/setup-python@v5
@@ -51,18 +40,11 @@ jobs:
       
       - name: Install Socket CLI and SDK
         run: |
-          if [[ "${{ inputs.use_test_pypi || 'true' }}" == "true" ]]; then
-            pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socketsecurity=="${{ inputs.socket_version || '2.0.0.dev501' }}"
-            pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socket-sdk-python=="${{ inputs.sdk_version || '2.0.4.dev194' }}"
-          else
-            pip install socketsecurity=="${{ inputs.socket_version || '2.0.0.dev501' }}"
-            pip install socket-sdk-python=="${{ inputs.sdk_version || '2.0.4.dev194' }}"
-          fi
-
+            pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socketsecurity=="${{ inputs.socket_version || '2.0.4.dev536' }}"
+            pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socket-sdk-python=="${{ inputs.sdk_version || '2.0.5.dev2' }}"
       - name: Check if Default Branch
         if: ${{ always() && format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
         run: echo "DEFAULT_BRANCH=1" >> $GITHUB_ENV
-      
       - uses: actions/github-script@v7
         id: get_pr_data
         with:
@@ -82,11 +64,9 @@ jobs:
               }
               
               return data;
-      
       - name: Save Pull Request Number
         run: |
-          echo "PR_NUMBER=${{ fromJson(steps.get_pr_data.outputs.result).number || github.event.issue.number || github.event.number }}"  >> $GITHUB_ENV
-      
+          echo "PR_NUMBER=${{ fromJson(steps.get_pr_data.outputs.result).number || github.event.issue.number || github.event.number }}"  >> $GITHUB_ENV        
       - name: Debug Environment
         env:
           SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
@@ -97,19 +77,42 @@ jobs:
             echo "SOCKET_SECURITY_API_KEY is not set"
           fi
 
+      - name: Get Commit Message
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # Get message from PR branch (HEAD^2) and escape special characters
+            MSG=$(git log -1 --pretty=%B HEAD^2 | sed 's/["`$\\]/\\&/g')
+            # Wrap the entire message in quotes when setting the env var
+            echo "COMMIT_MESSAGE=\"$MSG\"" >> $GITHUB_ENV
+          else
+            MSG="${{ github.event.head_commit.message }}"
+            # Wrap the entire message in quotes when setting the env var
+            echo "COMMIT_MESSAGE=\"$MSG\"" >> $GITHUB_ENV
+          fi
+
       - name: Debug Git Info
         run: |
           echo "GITHUB_SHA: $GITHUB_SHA"
           echo "GITHUB_REF: $GITHUB_REF"
           echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
           echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
+          echo "PR_NUMBER: $PR_NUMBER"
+          echo "REPO NAME: ${{ github.event.repository.name }}"
+          echo "BRANCH NAME: ${{ github.ref_name }}"
+          echo "GITHUB_ACTOR: $GITHUB_ACTOR"
+          echo "EVENT_ACTION: ${{ github.event.action }}"
+          echo "EVENT_NAME: ${{ github.event_name }}"
+          echo "DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}"
+          echo "COMMIT_MESSAGE: $COMMIT_MESSAGE"
           git rev-parse HEAD
+
 
       - name: Run scan
         env:
           SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
           GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          BRANCH_NAME: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
         run: |
           CHANGED_FILES=$(echo "${{ steps.changed-files.outputs.changed_files }}" | tr " " "\n")
           FILES=""
@@ -117,6 +120,13 @@ jobs:
             FILES="$FILES\"$line\","
           done <<< "$CHANGED_FILES"
           FILES=$(echo $FILES | sed 's/,*$//')
-          set -x
-          # socketcli --files "[$FILES]" --scm github --repo ${{ github.event.repository.name }} --branch "${{ github.ref_name }}" $(if [ ! -z $DEFAULT_BRANCH ]; then echo "--default_branch"; fi) --pr_number $(if [ -z $PR_NUMBER ]; then echo 0; else echo $PR_NUMBER;fi) --committer "$GITHUB_ACTOR" --commit_message "$COMMIT_MESSAGE" --target_path $GITHUB_WORKSPACE
-          socketcli --files "[$FILES]" --scm github --repo ${{ github.event.repository.name }} --branch "${{ github.ref_name }}" $(if [ ! -z $DEFAULT_BRANCH ]; then echo "--default-branch"; fi) --pr-number $(if [ -z $PR_NUMBER ]; then echo 0; else echo $PR_NUMBER;fi) --committers "$GITHUB_ACTOR" --commit-message "$COMMIT_MESSAGE" --target-path $GITHUB_WORKSPACE
+          socketcli --scm github --repo "$REPO_NAME" --pr-number "$(if [ -z "$PR_NUMBER" ]; then echo 0; else echo "$PR_NUMBER"; fi)" --branch "$BRANCH_NAME" --committer "$GITHUB_ACTOR" --commit-message "$COMMIT_MESSAGE" --target-path "$GITHUB_WORKSPACE" --files "[$FILES]" --enable-sarif --disable-blocking --timeout 1200 > socket.sarif
+          echo ""
+          echo "cat socket.sarif"
+          echo ""
+          cat socket.sarif
+      
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "socket.sarif"
