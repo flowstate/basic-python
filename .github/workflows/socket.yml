@@ -40,8 +40,8 @@ jobs:
       
       - name: Install Socket CLI and SDK
         run: |
-            pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socketsecurity=="${{ inputs.socket_version || '2.0.2.dev14' }}"
-            pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socket-sdk-python=="${{ inputs.sdk_version || '2.0.4.dev197' }}"
+            pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socketsecurity=="${{ inputs.socket_version || '2.0.2.dev527' }}"
+            pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ socket-sdk-python=="${{ inputs.sdk_version || '2.0.4' }}"
       - name: Check if Default Branch
         if: ${{ always() && format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
         run: echo "DEFAULT_BRANCH=1" >> $GITHUB_ENV
